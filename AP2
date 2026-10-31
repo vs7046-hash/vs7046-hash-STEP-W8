@@ -1,0 +1,123 @@
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+
+abstract class Assignment {
+    String title;
+    int maxMarks;
+    LocalDate dueDate;
+
+    Assignment(String title, int maxMarks, LocalDate dueDate) {
+        this.title = title;
+        this.maxMarks = maxMarks;
+        this.dueDate = dueDate;
+    }
+
+    abstract double penaltyRate();
+
+    double calculateMarks(double marks, long daysLate) {
+        return Math.max(0, Math.min(maxMarks, marks)
+                * (1 - penaltyRate() * daysLate));
+    }
+}
+
+class CodingAssignment extends Assignment {
+    CodingAssignment(String title, int marks, LocalDate date) {
+        super(title, marks, date);
+    }
+
+    double penaltyRate() {
+        return 0.10;
+    }
+}
+
+class WrittenAssignment extends Assignment {
+    WrittenAssignment(String title, int marks, LocalDate date) {
+        super(title, marks, date);
+    }
+
+    double penaltyRate() {
+        return 0.20;
+    }
+}
+
+class Student {
+    String name;
+
+    Student(String name) {
+        this.name = name;
+    }
+}
+
+class Submission {
+    private Student student;
+    private Assignment assignment;
+    private LocalDate submissionDate;
+    private String status = "Submitted";
+
+    Submission(Student student, Assignment assignment, LocalDate date) {
+        this.student = student;
+        this.assignment = assignment;
+        this.submissionDate = date;
+        long late = Math.max(0,
+                ChronoUnit.DAYS.between(assignment.dueDate, date));
+
+        System.out.println(student.name + "'s submission for '"
+                + assignment.title + "' received ("
+                + (late == 0 ? "on time" : late + " days late")
+                + "). Status: " + status + ".");
+    }
+
+    void grade(double marks) {
+        if (!status.equals("Submitted")) {
+            System.out.println("Cannot grade again.");
+            return;
+        }
+
+        long late = Math.max(0,
+                ChronoUnit.DAYS.between(assignment.dueDate, submissionDate));
+        double finalMarks = assignment.calculateMarks(marks, late);
+
+        if (late > 0) {
+            System.out.printf("%s graded: %.0f/%d after %.0f%% late penalty.%n",
+                    student.name, finalMarks, assignment.maxMarks,
+                    late * assignment.penaltyRate() * 100);
+        } else {
+            System.out.printf("%s graded: %.0f/%d.%n",
+                    student.name, finalMarks, assignment.maxMarks);
+        }
+
+        status = "Graded";
+        System.out.println("Status: " + status + ".");
+    }
+
+    void resubmit() {
+        if (status.equals("Graded")) {
+            System.out.println("Cannot resubmit: '" + assignment.title
+                    + "' has already been graded.");
+        } else {
+            submissionDate = LocalDate.now();
+            System.out.println("Resubmission received.");
+        }
+    }
+}
+
+public class AssignmentSubmissionPortal {
+    public static void main(String[] args) {
+        Student asha = new Student("Asha");
+        Student ravi = new Student("Ravi");
+
+        Assignment a1 = new CodingAssignment("Linked List Lab", 50,
+                LocalDate.of(2026, 3, 10));
+        Assignment a2 = new WrittenAssignment("Design Essay", 50,
+                LocalDate.of(2026, 3, 12));
+
+        Submission s1 = new Submission(asha, a1,
+                LocalDate.of(2026, 3, 10));
+        Submission s2 = new Submission(ravi, a2,
+                LocalDate.of(2026, 3, 14));
+
+        s1.grade(45);
+        s2.grade(40);
+        s1.resubmit();
+    }
+}
