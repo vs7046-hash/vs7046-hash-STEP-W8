@@ -1,0 +1,124 @@
+import java.util.*;
+
+class Customer {
+    String name;
+
+    Customer(String name) {
+        this.name = name;
+    }
+}
+
+class Product {
+    String name;
+    double price;
+
+    Product(String name, double price) {
+        this.name = name;
+        this.price = price;
+    }
+}
+
+interface PaymentMethod {
+    boolean processPayment(double amount);
+}
+
+class CreditCardPayment implements PaymentMethod {
+    public boolean processPayment(double amount) {
+        System.out.println("Credit Card payment initiated: $" + amount);
+        return true;
+    }
+}
+
+class PayPalPayment implements PaymentMethod {
+    public boolean processPayment(double amount) {
+        System.out.println("PayPal payment initiated: $" + amount);
+        return false;
+    }
+}
+
+class BankTransferPayment implements PaymentMethod {
+    public boolean processPayment(double amount) {
+        System.out.println("Bank Transfer payment initiated: $" + amount);
+        return true;
+    }
+}
+
+class Order {
+    String id;
+    Customer customer;
+    List<Product> products = new ArrayList<>();
+    List<Integer> quantities = new ArrayList<>();
+    String status = "Pending";
+
+    Order(String id, Customer customer) {
+        this.id = id;
+        this.customer = customer;
+        System.out.println("Order created for " + customer.name);
+    }
+
+    void addProduct(Product product, int quantity) {
+        if (quantity <= 0) {
+            System.out.println("Invalid quantity.");
+            return;
+        }
+
+        products.add(product);
+        quantities.add(quantity);
+    }
+
+    double total() {
+        double amount = 0;
+
+        for (int i = 0; i < products.size(); i++)
+            amount += products.get(i).price * quantities.get(i);
+
+        return amount;
+    }
+
+    void pay(PaymentMethod method) {
+        if (products.isEmpty()) {
+            System.out.println("Cannot process payment for an empty order.");
+            return;
+        }
+
+        if (status.equals("Paid")) {
+            System.out.println("Order is already paid.");
+            return;
+        }
+
+        System.out.println("Payment initiated for Order " + id);
+
+        if (method.processPayment(total())) {
+            status = "Paid";
+            System.out.println("Payment for Order " + id + " successful.");
+        } else {
+            System.out.println("Payment for Order " + id + " failed.");
+        }
+
+        System.out.println("Order status: " + status);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Customer x = new Customer("Customer X");
+        Customer y = new Customer("Customer Y");
+        Customer z = new Customer("Customer Z");
+
+        Product a = new Product("Product A", 100);
+        Product b = new Product("Product B", 200);
+        Product c = new Product("Product C", 150);
+
+        Order o1 = new Order("X", x);
+        o1.addProduct(a, 2);
+        o1.addProduct(b, 1);
+        o1.pay(new CreditCardPayment());
+
+        Order o2 = new Order("Y", y);
+        o2.pay(new CreditCardPayment());
+
+        Order o3 = new Order("Z", z);
+        o3.addProduct(c, 1);
+        o3.pay(new PayPalPayment());
+    }
+}
