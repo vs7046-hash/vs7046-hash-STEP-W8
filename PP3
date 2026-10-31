@@ -1,0 +1,130 @@
+import java.util.*;
+
+abstract class Question {
+    String text;
+    int marks;
+
+    Question(String text, int marks) {
+        this.text = text;
+        this.marks = marks;
+    }
+
+    abstract boolean evaluate(String answer);
+}
+
+class MCQ extends Question {
+    String correct;
+
+    MCQ(String text, int marks, String correct) {
+        super(text, marks);
+        this.correct = correct;
+    }
+
+    boolean evaluate(String answer) {
+        return correct.equalsIgnoreCase(answer);
+    }
+}
+
+class TrueFalseQuestion extends Question {
+    String correct;
+
+    TrueFalseQuestion(String text, int marks, String correct) {
+        super(text, marks);
+        this.correct = correct;
+    }
+
+    boolean evaluate(String answer) {
+        return correct.equalsIgnoreCase(answer);
+    }
+}
+
+class Examination {
+    String name;
+    List<Question> questions = new ArrayList<>();
+
+    Examination(String name) {
+        this.name = name;
+    }
+
+    void addQuestion(Question q) {
+        questions.add(q);
+    }
+}
+
+class Student {
+    String name;
+
+    Student(String name) {
+        this.name = name;
+    }
+}
+
+class Attempt {
+    Student student;
+    Examination exam;
+    Map<Integer, String> answers = new HashMap<>();
+    boolean submitted = false;
+
+    Attempt(Student student, Examination exam) {
+        this.student = student;
+        this.exam = exam;
+        System.out.println(exam.name + " started by " + student.name);
+    }
+
+    void answer(int number, String answer) {
+        if (submitted) {
+            System.out.println("Cannot change answers for a submitted examination.");
+            return;
+        }
+
+        if (number < 1 || number > exam.questions.size()) {
+            System.out.println("Invalid question number.");
+            return;
+        }
+
+        answers.put(number, answer);
+        System.out.println("Answer recorded for Question " + number);
+    }
+
+    void submit() {
+        if (submitted)
+            return;
+
+        submitted = true;
+        int score = 0;
+        int total = 0;
+
+        System.out.println(exam.name + " submitted by " + student.name);
+
+        for (int i = 0; i < exam.questions.size(); i++) {
+            Question q = exam.questions.get(i);
+            total += q.marks;
+
+            boolean correct = q.evaluate(answers.getOrDefault(i + 1, ""));
+            if (correct)
+                score += q.marks;
+
+            System.out.println("Question " + (i + 1) + ": " +
+                    (correct ? "Correct" : "Incorrect") + " (" +
+                    (correct ? q.marks : 0) + " points)");
+        }
+
+        System.out.println("Total score: " + score + "/" + total);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Student s = new Student("Student 1");
+        Examination e = new Examination("Exam A");
+
+        e.addQuestion(new MCQ("Question 1", 5, "C"));
+        e.addQuestion(new TrueFalseQuestion("Question 2", 5, "False"));
+
+        Attempt a = new Attempt(s, e);
+        a.answer(1, "C");
+        a.answer(2, "True");
+        a.submit();
+        a.answer(1, "A");
+    }
+}
