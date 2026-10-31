@@ -1,0 +1,98 @@
+import java.util.*;
+
+abstract class Vehicle {
+    String name;
+    boolean available = true;
+
+    Vehicle(String name) {
+        this.name = name;
+    }
+
+    abstract double calculateCharge(int days);
+}
+
+class Sedan extends Vehicle {
+    Sedan(String name) {
+        super(name);
+    }
+
+    double calculateCharge(int days) {
+        return days * 50;
+    }
+}
+
+class SUV extends Vehicle {
+    SUV(String name) {
+        super(name);
+    }
+
+    double calculateCharge(int days) {
+        return days * 80;
+    }
+}
+
+class Truck extends Vehicle {
+    Truck(String name) {
+        super(name);
+    }
+
+    double calculateCharge(int days) {
+        return days * 120;
+    }
+}
+
+class Customer {
+    String name;
+
+    Customer(String name) {
+        this.name = name;
+    }
+}
+
+class Rental {
+    Vehicle vehicle;
+    Customer customer;
+    int days;
+
+    Rental(Vehicle vehicle, Customer customer, int days) {
+        this.vehicle = vehicle;
+        this.customer = customer;
+        this.days = days;
+    }
+
+    void returnVehicle() {
+        vehicle.available = true;
+        System.out.println(vehicle.name + " returned by " + customer.name);
+    }
+}
+
+public class Main {
+    static Rental rent(Vehicle v, Customer c, int days) {
+        if (!v.available) {
+            System.out.println(v.name + " is currently unavailable.");
+            return null;
+        }
+
+        v.available = false;
+        System.out.println(v.name + " rented successfully by " + c.name);
+        System.out.println("Rental charge: $" + v.calculateCharge(days));
+        return new Rental(v, c, days);
+    }
+
+    public static void main(String[] args) {
+        Vehicle sedan = new Sedan("Sedan A");
+        Vehicle suv = new SUV("SUV B");
+
+        Customer c1 = new Customer("Customer 1");
+        Customer c2 = new Customer("Customer 2");
+        Customer c3 = new Customer("Customer 3");
+
+        Rental r = rent(sedan, c1, 3);
+        rent(sedan, c2, 2);
+
+        if (r != null)
+            r.returnVehicle();
+
+        rent(suv, c3, 5);
+    }
+}
