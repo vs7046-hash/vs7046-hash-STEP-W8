@@ -1,0 +1,93 @@
+import java.util.*;
+
+abstract class WashType {
+    abstract int duration();
+    abstract double charge();
+    abstract String name();
+}
+
+class QuickWash extends WashType {
+    int duration() { return 30; }
+    double charge() { return 20; }
+    String name() { return "Quick"; }
+}
+
+class NormalWash extends WashType {
+    int duration() { return 45; }
+    double charge() { return 30; }
+    String name() { return "Normal"; }
+}
+
+class HeavyWash extends WashType {
+    int duration() { return 60; }
+    double charge() { return 45; }
+    String name() { return "Heavy"; }
+}
+
+class Student {
+    String name;
+
+    Student(String name) {
+        this.name = name;
+    }
+}
+
+class WashCycle {
+    Student student;
+    WashingMachine machine;
+    WashType type;
+
+    WashCycle(Student student, WashingMachine machine, WashType type) {
+        this.student = student;
+        this.machine = machine;
+        this.type = type;
+    }
+}
+
+class WashingMachine {
+    private String id;
+    private WashCycle cycle;
+
+    WashingMachine(String id) {
+        this.id = id;
+    }
+
+    void startWash(Student student, WashType type) {
+        if (cycle != null) {
+            System.out.println("Machine " + id + " is currently busy.");
+            return;
+        }
+
+        cycle = new WashCycle(student, this, type);
+        System.out.printf("%s wash started on %s for %s (%d min). Charge: ₹%.2f.%n",
+                type.name(), id, student.name, type.duration(), type.charge());
+    }
+
+    void completeWash() {
+        if (cycle == null) {
+            System.out.println(id + " is already free.");
+            return;
+        }
+
+        System.out.println(id + " cycle completed.");
+        cycle = null;
+        System.out.println(id + " is now free.");
+    }
+}
+
+public class HostelLaundryQueue {
+    public static void main(String[] args) {
+        WashingMachine m1 = new WashingMachine("M1");
+        WashingMachine m2 = new WashingMachine("M2");
+
+        Student asha = new Student("Asha");
+        Student ravi = new Student("Ravi");
+        Student neha = new Student("Neha");
+
+        m1.startWash(asha, new QuickWash());
+        m1.startWash(ravi, new HeavyWash());
+        m2.startWash(ravi, new HeavyWash());
+        m1.completeWash();
+        m1.startWash(neha, new NormalWash());
+    }
+}
